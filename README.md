@@ -1,3 +1,5 @@
+![Static Badge](https://img.shields.io/badge/ojigi-v1.0-blue)
+
 # OJIGI
 
 ##　概要  
