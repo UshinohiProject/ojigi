@@ -28,7 +28,7 @@ def recieve_and_send_message(message_send):
             print(message)
             return int(message)
 
-def salary_input(count):
+def input_salary(count):
     
     while not button_a.was_pressed() and button_b.was_pressed():
         sleep(100)  # Don't constantly poll the button, give a little delay to reduce power usage
@@ -99,7 +99,7 @@ def salary_input(count):
     display.show(Image.HAPPY)
     return count * 100
 
-def calculate_difference(salary, salary_recieved):
+def calculate_salary_difference(salary, salary_recieved):
     difference = salary_recieved - salary
     print("給料差は" + str(difference))
     return difference
@@ -199,10 +199,10 @@ def measure_accel(bend_angle):
 init()
 radio_config()
 
-salary = salary_input(count)
+salary = input_salary(count)
 
 salary_recieved = recieve_and_send_message(salary)
-salary_difference = calculate_difference(salary, salary_recieved)
+salary_difference = calculate_salary_difference(salary, salary_recieved)
 bend_angle=calculate_desired_angle(salary_difference)
 
 measure_accel(bend_angle)
