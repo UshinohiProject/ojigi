@@ -16,21 +16,22 @@ def radio_config():
     radio.on()
 
 
-def send_message(message_send):
-    radio.send(str(message_send))
+def send_my_salary(my_salary):
+    radio.send(str(my_salary))
     print("送信完了")
 
 
-def recieve_and_send_message(message_send):
+def exchange_salaries(my_salary):
     radio.on()
     print("相手の年収を待っています…")
     while True:
-        message = radio.receive()
-        radio.send(str(message_send))
+        partner_salary = radio.receive()
+        # radio.send(str(my_salary))
+        send_my_salary(my_salary)
         sleep(500)
-        if message:
-            print(message)
-            return int(message)
+        if partner_salary:
+            print(partner_salary)
+            return int(partner_salary)
 
 
 def input_salary(count):
@@ -109,8 +110,8 @@ def input_salary(count):
     return count * 100
 
 
-def calculate_salary_difference(salary, salary_recieved):
-    difference = salary_recieved - salary
+def calculate_salary_difference(my_salary, partner_salary):
+    difference = partner_salary - my_salary
     print("給料差は" + str(difference))
     return difference
 
@@ -217,10 +218,10 @@ def measure_accel(bend_angle):
 init()
 radio_config()
 
-salary = input_salary(count)
+my_salary = input_salary(count)
 
-salary_recieved = recieve_and_send_message(salary)
-salary_difference = calculate_salary_difference(salary, salary_recieved)
+partner_salary = exchange_salaries(my_salary)
+salary_difference = calculate_salary_difference(my_salary, partner_salary)
 bend_angle = calculate_desired_angle(salary_difference)
 
 measure_accel(bend_angle)
