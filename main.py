@@ -5,9 +5,7 @@ import music
 
 
 def init():
-    global count
     global on_off_switch
-    count = 0
     on_off_switch = 9
 
 
@@ -16,26 +14,20 @@ def radio_config():
     radio.on()
 
 
-def send_my_salary(my_salary):
-    radio.send(str(my_salary))
-    print("送信完了")
-
-
 def exchange_salaries(my_salary):
     radio.on()
     print("相手の年収を待っています…")
     while True:
         partner_salary = radio.receive()
-        # radio.send(str(my_salary))
-        send_my_salary(my_salary)
+        radio.send(str(my_salary))
         sleep(500)
         if partner_salary:
             print(partner_salary)
             return int(partner_salary)
 
 
-def input_salary(count):
-
+def get_my_salary():
+    count = 0
     while not button_a.was_pressed() and button_b.was_pressed():
         """
         Don't constantly poll the button, give a little delay
@@ -43,172 +35,90 @@ def input_salary(count):
         """
         sleep(100)
 
-    print("年収を入力してください。1ライト、100万円")
-    print("")
-    print("ロゴボタンをタッチで決定")
-    print("")
+    print("年収を入力してください。1ライト、100万円\n\n")
+    print("ロゴボタンをタッチで決定\n\n")
     while True:
         if button_b.was_pressed():
-            if count <= 4:
-                display.set_pixel(count, 0, 9)
-                count = count + 1
-                print(str(int(count)) + "00万円")
-            elif count >= 5 and count <= 9:
-                display_count = count - 5
-                display.set_pixel(display_count, 1, 9)
-                count = count + 1
-                print(str(int(count)) + "00万円")
-            elif count >= 10 and count <= 14:
-                display_count = count - 10
-                display.set_pixel(display_count, 2, 9)
-                count = count + 1
-                print(str(int(count)) + "00万円")
-            elif count >= 15 and count <= 19:
-                display_count = count - 15
-                display.set_pixel(display_count, 3, 9)
-                count = count + 1
-                print(str(int(count)) + "00万円")
-            elif count >= 20 and count <= 24:
-                display_count = count - 20
-                display.set_pixel(display_count, 4, 9)
-                count = count + 1
-                print(str(int(count)) + "00万円")
-
+            count += 1
+            display_salary_inputed(count, 9)
         elif button_a.was_pressed():
-            if count >= 1 and count <= 5:
-                count_display = count - 1
-                display.set_pixel(count_display, 0, 0)
-                count = count - 1
-                print(str(int(count)) + "00万円")
-            elif count >= 6 and count <= 10:
-                count_display = count - 1 - 5
-                display.set_pixel(count_display, 1, 0)
-                count = count - 1
-                print(str(int(count)) + "00万円")
-            elif count >= 11 and count <= 15:
-                count_display = count - 1 - 10
-                display.set_pixel(count_display, 2, 0)
-                count = count - 1
-                print(str(int(count)) + "00万円")
-            elif count >= 16 and count <= 20:
-                count_display = count - 1 - 15
-                display.set_pixel(count_display, 3, 0)
-                count = count - 1
-                print(str(int(count)) + "00万円")
-            elif count >= 21 and count <= 25:
-                count_display = count - 1 - 20
-                display.set_pixel(count_display, 4, 0)
-                count = count - 1
-                print(str(int(count)) + "00万円")
-            elif count <= 0:
-                pass
+            if count == 0:
+                continue
+            count -= 1
+            display_salary_inputed(count, 0)
         elif pin_logo.is_touched():
-            print('あなたの年収は' + str(int(count)) + '00万円で決定!')
+            print("あなたの年収は" + str(int(count)) + "00万円で決定!")
             break
     sleep(1000)
     display.show(Image.HAPPY)
-    return count * 100
+    my_salary = count * 100
+    return my_salary
 
 
-def calculate_salary_difference(my_salary, partner_salary):
+def display_salary_inputed(count, brightness):
+    print(str(int(count)) + "00万円")
+    if brightness == 0:
+        count += 1
+    column = (count - 1) % 5
+    row = (count - 1) // 5
+    display.set_pixel(column, row, brightness)
+
+
+def get_salary_difference(my_salary, partner_salary):
     difference = partner_salary - my_salary
     print("給料差は" + str(difference))
     return difference
 
 
-def calculate_desired_angle(salary_difference):
+def get_required_bow_angle(salary_difference):
     if salary_difference > 0:
         """
         if the salary difference is positive, meaning your salary is lower,
         calculate bend angle accordingly
         """
-        if salary_difference > 0 and salary_difference <= 500:
-            bend_angle = 20
-            print("お辞儀しなきゃいけない角度は" + str(bend_angle) + "°")
-            return bend_angle
-        elif salary_difference > 500 and salary_difference <= 1000:
-            bend_angle = 40
-            print("お辞儀しなきゃいけない角度は" + str(bend_angle) + "°")
-            return bend_angle
-        elif salary_difference > 1000 and salary_difference <= 1500:
-            bend_angle = 60
-            print("お辞儀しなきゃいけない角度は" + str(bend_angle) + "°")
-            return bend_angle
-        elif salary_difference > 1500 and salary_difference <= 2000:
-            bend_angle = 80
-            print("お辞儀しなきゃいけない角度は" + str(bend_angle) + "°")
-            return bend_angle
-        elif salary_difference > 2000:
-            bend_angle = 100
-            print("お辞儀しなきゃいけない角度は" + str(bend_angle) + "°")
-            return bend_angle
+        required_bow_angle = 20 * ((salary_difference // 500) + 1)
+        if required_bow_angle >= 100:
+            required_bow_angle = 100
     else:
-        # Only bend a certain angle like 10 deg because your salary is heigher
-        bend_angle = 20
-        print("お辞儀しなきゃいけない角度は" + str(bend_angle) + "°")
-        return bend_angle
+        # Only bend a certain angle like 10 deg because your salary is higher
+        required_bow_angle = 20
+    print("お辞儀しなきゃいけない角度は" + str(required_bow_angle) + "°")
+    return required_bow_angle
 
 
-def measure_accel(bend_angle):
-    print('Starting Acceleration Measurement...')
+def verify_bow_angle(required_bow_angle):
+    print("Starting Acceleration Measurement...")
     sleep(2000)
 
     while True:
-        x_strength = accelerometer.get_x()
         y_strength = accelerometer.get_y()
         z_strength = accelerometer.get_z()
         angle_rad = math.atan2(z_strength, y_strength)
         # Convert the result from radians to degrees
-        angle_deg = math.degrees(angle_rad)
-        print("今の角度は" + str(angle_deg) + "°")
-        if angle_deg <= (bend_angle/5)*1:
-            display.show(Image('00000:'
-                               '00000:'
-                               '00000:'
-                               '00000:'
-                               '00000'))
-            music.stop()
-        elif angle_deg <= (bend_angle/5)*2:
-            display.show(Image('99999:'
-                               '00000:'
-                               '00000:'
-                               '00000:'
-                               '00000'))
-            music.stop()
-        elif angle_deg <= (bend_angle/5)*3:
-            display.show(Image('99999:'
-                               '99999:'
-                               '00000:'
-                               '00000:'
-                               '00000'))
-            music.stop()
-        elif angle_deg <= (bend_angle/5)*4:
-            display.show(Image('99999:'
-                               '99999:'
-                               '99999:'
-                               '00000:'
-                               '00000'))
-            music.stop()
-        elif angle_deg <= (bend_angle/5)*5:
-            display.show(Image('99999:'
-                               '99999:'
-                               '99999:'
-                               '99999:'
-                               '00000'))
-            music.stop()
+        detected_bow_angle = math.degrees(angle_rad)
+        print("今の角度は" + str(detected_bow_angle) + "°")
 
-        elif angle_deg <= (bend_angle/5)*6:
-            display.show(Image('99999:'
-                               '99999:'
-                               '99999:'
-                               '99999:'
-                               '99999'))
+        angle_meter = 0
+        if detected_bow_angle > 0:
+            angle_meter = required_bow_angle // detected_bow_angle
+        if angle_meter >= 5:
+            angle_meter = 5
+
+        angle_meter_image = ''
+        for i in range(angle_meter):
+            angle_meter_image += "99999:"
+            i += 1
+        for i in range(5 - angle_meter):
+            angle_meter_image += "00000:"
+            i += 1
+        angle_meter_image = angle_meter_image[:-1]
+        display.show(Image(angle_meter_image))
+
+        if detected_bow_angle < required_bow_angle:
+            music.stop()
+        else:
             music.pitch(460)
 
-        """
-        print("X_Aceel: " + str(x_strength) + " " + "Y_Aceel: " +
-              str(y_strength) + " " + "Z_Aceel: " + str(z_strength) + " ")
-        """
         sleep(50)
 
         if pin_logo.is_touched():
@@ -218,10 +128,10 @@ def measure_accel(bend_angle):
 init()
 radio_config()
 
-my_salary = input_salary(count)
+my_salary = get_my_salary()
 
 partner_salary = exchange_salaries(my_salary)
-salary_difference = calculate_salary_difference(my_salary, partner_salary)
-bend_angle = calculate_desired_angle(salary_difference)
+salary_difference = get_salary_difference(my_salary, partner_salary)
+required_bow_angle = get_required_bow_angle(salary_difference)
 
-measure_accel(bend_angle)
+verify_bow_angle(required_bow_angle)
